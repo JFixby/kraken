@@ -1,13 +1,12 @@
 package input
 
 import (
-	"bufio"
+	"github.com/jfixby/kraken/orderbook"
 	"github.com/jfixby/pin"
 	"github.com/jfixby/pin/fileops"
-	"github.com/jfixby/pin/lang"
-	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestInput(t *testing.T) {
@@ -16,20 +15,21 @@ func TestInput(t *testing.T) {
 	testInput := filepath.Join(testData, "in", "input_file.csv")
 	//testOutput := filepath.Join(testData, "out", "output_file.csv")
 
-	//list := fileops.ListFiles(home, func(file string) bool { return true }, fileops.ALL_CHILDREN)
+	reader := NewFileReader(testInput)
+	testListener := &TestListener{}
+	reader.Subscribe(testListener)
+	reader.Run()
 
-	pin.D("reading", testInput)
-	file, err := os.Open(testInput)
-	lang.CheckErr(err)
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	// optionally, resize scanner's capacity for lines over 64K, see next example
-	for scanner.Scan() {
-		txt:=scanner.Text()
-		pin.D("",txt)
+	for reader.IsRunnung() {
+		time.Sleep(2 * time.Second)
 	}
 
-	lang.CheckErr(err)
+	pin.D("EXIT")
+}
 
+type TestListener struct {
+}
+
+func (t TestListener) DoProcess(ev *orderbook.Event) {
+	pin.D("Event received", ev)
 }

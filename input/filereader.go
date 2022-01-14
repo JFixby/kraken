@@ -5,6 +5,8 @@ import (
 	"github.com/jfixby/kraken/orderbook"
 	"github.com/jfixby/pin"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type FileReader struct {
@@ -56,7 +58,7 @@ func (r *FileReader) runthread() {
 
 	for scanner.Scan() && r.runFlag {
 		txt := scanner.Text()
-		pin.D("", txt)
+		//		pin.D("", txt)
 		event := ParseEvent(txt)
 		if r.listener != nil {
 			if event != nil {
@@ -74,24 +76,44 @@ func ParseEvent(txt string) *orderbook.Event {
 	if txt == "" {
 		return nil
 	}
+
 	if txt[0:1] == "#" {
 		return nil
 	}
 
+	arr := strings.Split(txt, ", ")
+
 	result := &orderbook.Event{}
 
-	if txt[0:1] == "F" {
+	//pin.D(txt, arr)
+
+	if arr[0] == "F" {
 		result.OrderType = orderbook.FLUSH
 		return result
 	}
 
-	if txt[0:1] == "N" {
+	if arr[0] == "N" {
 		result.OrderType = orderbook.NEW
 		return result
 	}
 
-	if txt[0:1] == "C" {
+	if arr[0] == "C" {
 		result.OrderType = orderbook.CANCEL
+
+		UserIDCancel, err := strconv.Atoi(arr[1])
+		if err != nil {
+			pin.E("invalid input", txt)
+			return nil
+		}
+		result.UserIDCancel = orderbook.OrderID(UserIDCancel)
+
+		OrderIDCancel, err := strconv.Atoi(arr[2])
+		if err != nil {
+			pin.E("invalid input", txt)
+			return nil
+		}
+		result.OrderIDCancel = orderbook.OrderID(OrderIDCancel)
+
 		return result
 	}
 

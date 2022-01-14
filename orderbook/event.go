@@ -1,5 +1,7 @@
 package orderbook
 
+import "encoding/json"
+
 type OrderType string
 const NEW OrderType = "NEW"
 const CANCEL OrderType = "CANCEL"
@@ -24,12 +26,19 @@ type Event struct {
 	UserIDBuy UserID
 	UserIDSell UserID
 	UserIDAcknowledge UserID
+	UserIDCancel OrderID
 
 	OrderIDBuy OrderID
 	OrderIDSell OrderID
 	OrderIDAcknowledge OrderID
+	OrderIDCancel OrderID
 
 	Price Price
 	Quantity Quantity
 
+}
+
+func (e *Event) String() string {
+	b, _ := json.Marshal(e)
+	return string(b)
 }

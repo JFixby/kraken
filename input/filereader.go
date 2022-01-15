@@ -94,25 +94,71 @@ func ParseEvent(txt string) *orderbook.Event {
 
 	if arr[0] == "N" {
 		result.OrderType = orderbook.NEW
+
+		UserID, err := strconv.Atoi(arr[1])
+		if err != nil {
+			pin.E("invalid input", txt)
+			return nil
+		}
+		result.UserID = orderbook.UserID(UserID)
+
+		result.Symbol = orderbook.Symbol(arr[2])
+
+		Price, err := strconv.Atoi(arr[3])
+		if err != nil {
+			pin.E("invalid input", txt)
+			return nil
+		}
+		result.Price = orderbook.Price(Price)
+
+		Qty, err := strconv.Atoi(arr[4])
+		if err != nil {
+			pin.E("invalid input", txt)
+			return nil
+		}
+		result.Quantity = orderbook.Quantity(Qty)
+
+		if arr[5] == "S" {
+			result.Side = orderbook.SELL
+		} else if arr[5] == "B" {
+			result.Side = orderbook.BUY
+		} else {
+			pin.E("Unknown order side", txt)
+			return nil
+		}
+
+		if arr[6][len(arr[6])-1:len(arr[6])] == " " {
+			arr[6] = arr[6][0 : len(arr[6])-1]
+		}
+		OrderID, err := strconv.Atoi(arr[6])
+		if err != nil {
+			pin.E("invalid input", txt)
+			return nil
+		}
+		result.OrderID = orderbook.OrderID(OrderID)
+
 		return result
 	}
 
 	if arr[0] == "C" {
 		result.OrderType = orderbook.CANCEL
 
-		UserIDCancel, err := strconv.Atoi(arr[1])
+		UserID, err := strconv.Atoi(arr[1])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.UserIDCancel = orderbook.OrderID(UserIDCancel)
+		result.UserID = orderbook.UserID(UserID)
 
-		OrderIDCancel, err := strconv.Atoi(arr[2])
+		if arr[2][len(arr[2])-1:len(arr[2])] == " " {
+			arr[2] = arr[2][0 : len(arr[2])-1]
+		}
+		OrderID, err := strconv.Atoi(arr[2])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.OrderIDCancel = orderbook.OrderID(OrderIDCancel)
+		result.OrderID = orderbook.OrderID(OrderID)
 
 		return result
 	}

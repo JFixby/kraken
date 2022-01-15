@@ -7,34 +7,25 @@ const NEW OrderType = "NEW"
 const CANCEL OrderType = "CANCEL"
 const FLUSH OrderType = "FLUSH"
 
-type OrderSide string
-const BUY OrderSide  = "BUY"
-const SELL OrderSide  = "SELL"
+type Side string
+const BUY Side  = "BUY"
+const SELL Side  = "SELL"
 
 type Symbol string
 type UserID int64
 type OrderID int64
-type Price float64
-type Quantity float64
+type Price int64
+type Quantity int64
 
 type Event struct {
 
-	Symbol Symbol
-
 	OrderType OrderType
-
-	UserIDBuy UserID
-	UserIDSell UserID
-	UserIDAcknowledge UserID
-	UserIDCancel OrderID
-
-	OrderIDBuy OrderID
-	OrderIDSell OrderID
-	OrderIDAcknowledge OrderID
-	OrderIDCancel OrderID
-
+	UserID UserID
+	Symbol Symbol
 	Price Price
 	Quantity Quantity
+	Side Side
+	OrderID OrderID
 
 }
 

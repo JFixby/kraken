@@ -59,6 +59,15 @@ func (r *FileReader) runthread() {
 	for scanner.Scan() && r.runFlag {
 		txt := scanner.Text()
 		//		pin.D("", txt)
+
+		if strings.HasPrefix(txt, "#name: ") {
+			tag := txt[len("#name: "):]
+			if r.listener != nil {
+				r.listener.Reset(tag)
+				continue
+			}
+		}
+
 		event := ParseEvent(txt)
 		if r.listener != nil {
 			if event != nil {

@@ -108,8 +108,8 @@ A, 2, 101
 A, 2, 102
 B, S, 11, 100
 R, 2, 103
-
 #name: scenario  8
+
 #descr: balanced book, limit buy
 
 A, 1, 1

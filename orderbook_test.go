@@ -80,4 +80,5 @@ func (t *TestListener) Reset(scenario string) {
 	pin.D("Next scenario", scenario)
 	t.scenario = scenario
 	t.counter = 0
+	t.book.Reset()
 }

@@ -1,7 +1,5 @@
 package orderbook
 
-import "github.com/MauriceGit/skiplist"
-
 type BookListener interface {
 	OnBookEvent(*BookEvent)
 }
@@ -14,7 +12,7 @@ type Book struct {
 
 type Market struct {
 	Symbol Symbol
-	orders map[Price]*skiplist.SkipList
+	orders map[Price][]Order
 }
 
 type Order struct {
@@ -37,7 +35,7 @@ func (b *Book) NewOrder(ev *Event) {
 	market := b.getMarket(ev.Symbol)
 	orders := market.orders[ev.Price]
 
-	order := &Order{}
+	order := Order{}
 	order.OrderID = b.NewOrderID()
 	order.Price = ev.Price
 	order.Symbol = ev.Symbol
@@ -65,7 +63,7 @@ func (b *Book) getMarket(symbol Symbol) *Market {
 	market := b.markets[symbol]
 	if market == nil {
 		market = &Market{Symbol: symbol}
-		market.orders = map[Price]*skiplist.SkipList
+		market.orders = map[Price][]Order{}
 		b.markets[symbol] = market
 	}
 	return market
@@ -76,6 +74,12 @@ func (b *Book) NewOrderID() OrderID {
 	return OrderID(b.orderid)
 }
 
+func (b *Book) Reset() *Book {
+	b.orderid = 0
+	b.markets = nil
+	return b
+}
+
 func NewBook(l BookListener) *Book {
-	return &Book{BookListener: l}
+	return Book{BookListener: l}.Reset()
 }

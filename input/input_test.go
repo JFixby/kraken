@@ -30,11 +30,12 @@ func TestInput(t *testing.T) {
 type TestListener struct {
 }
 
-func (t TestListener) DoProcess(ev *orderbook.Event) {
+func (t *TestListener) DoProcess(ev *orderbook.Event) {
 	pin.D("Event received", ev)
 }
 
-func (t TestListener) Reset(scenario string) {
+func (t *TestListener) Reset(scenario string) {
 	pin.D("Next scenario", scenario)
+
 }
 

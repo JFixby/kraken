@@ -1,4 +1,4 @@
-package input
+package testoutput
 
 import (
 	"github.com/jfixby/pin"
@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 )
+
 
 func TestInput(t *testing.T) {
 	home := fileops.Abs("")

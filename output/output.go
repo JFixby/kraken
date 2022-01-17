@@ -1,4 +1,4 @@
-package input
+package testoutput
 
 import (
 	"bufio"
@@ -82,7 +82,7 @@ func (o *TestOutput) LoadAll() error {
 		if strings.HasPrefix(txt, "#name: ") {
 			tag = txt[len("#name: "):]
 			{
-				pin.D("tag", tag)
+				//pin.D("tag", tag)
 				o.data[tag] = []*TestEvent{}
 				continue
 			}
@@ -90,12 +90,23 @@ func (o *TestOutput) LoadAll() error {
 
 		event := TryToParse(txt)
 		if event != nil {
-			pin.D("", event)
+			//pin.D("", event)
 			o.data[tag] = append(o.data[tag], event)
 		}
 
 	}
 	return nil
+}
+
+func (o *TestOutput) GetEvent(scenario string, counter int) *TestEvent {
+	list := o.data[scenario]
+	if list == nil {
+		pin.E("scenario not found", scenario)
+		pin.E("                  ", counter)
+		pin.E("                  ", o.data)
+		panic("")
+	}
+	return list[counter]
 }
 
 func TryToParse(txt string) *TestEvent {

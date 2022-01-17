@@ -16,7 +16,7 @@
 # Publish trades (matched orders) format: 
 # T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
 
-#name: scenario  1
+#name: scenario 1
 #descr:balanced book
 
 A, 1, 1
@@ -33,7 +33,7 @@ B, B, 10, 200
 A, 2, 104
 B, S, 11, 200
 
-#name: scenario  2
+#name: scenario 2
 #descr: shallow bid
 
 A, 1, 1
@@ -46,7 +46,7 @@ R, 2, 103
 A, 1, 3
 B, B, 10, 200
 
-#name: scenario  3
+#name: scenario 3
 #descr: shallow ask
 
 A, 1, 1
@@ -58,7 +58,7 @@ R, 1, 2
 A, 2, 103
 B, S, 11, 200
 
-#name: scenario  4
+#name: scenario 4
 #descr: balanced book, limit below best bid
 
 A, 1, 1
@@ -70,7 +70,7 @@ A, 2, 102
 B, S, 11, 100
 R, 2, 103
 
-#name: scenario  5
+#name: scenario 5
 #descr: balanced book, limit above best ask
 
 A, 1, 1
@@ -82,7 +82,7 @@ A, 2, 102
 B, S, 11, 100
 R, 1, 103
 
-#name: scenario  6
+#name: scenario 6
 #descr: tighten spread through new limit orders
 
 A, 1, 1
@@ -97,7 +97,7 @@ B, B, 11, 100
 A, 1, 3
 B, S, 14, 100
 
-#name: scenario  7
+#name: scenario 7
 #descr: balanced book, limit sell
 
 A, 1, 1
@@ -108,7 +108,7 @@ A, 2, 101
 A, 2, 102
 B, S, 11, 100
 R, 2, 103
-#name: scenario  8
+#name: scenario 8
 
 #descr: balanced book, limit buy
 
@@ -121,7 +121,7 @@ A, 2, 102
 B, S, 11, 100
 R, 1, 3
 
-#name: scenario  9
+#name: scenario 9
 #descr: balanced book, cancel best bid and offer
 
 A, 1, 1
@@ -195,7 +195,7 @@ B, B, 10, 100
 A, 1, 2
 B, S, 12, 100
 A, 2, 101
-A, 2, 102 
+A, 2, 102
 B, S, 11, 100
 A, 1, 103
 T, 1, 103, 2, 102, 11, 100

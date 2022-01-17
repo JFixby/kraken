@@ -11,7 +11,7 @@ import (
 
 type FileReader struct {
 	inputFile string
-	listener  DataListener
+	listener  orderbook.OrderListener
 	runFlag   bool
 }
 
@@ -23,7 +23,7 @@ func NewFileReader(inputFile string) *FileReader {
 	}
 }
 
-func (r *FileReader) Subscribe(l DataListener) {
+func (r *FileReader) Subscribe(l orderbook.OrderListener) {
 	r.listener = l
 }
 
@@ -80,7 +80,7 @@ func (r *FileReader) runthread() {
 	r.runFlag = false
 }
 
-func ParseEvent(txt string) *orderbook.Event {
+func ParseEvent(txt string) *orderbook.OrderEvent {
 
 	if txt == "" {
 		return nil
@@ -92,7 +92,7 @@ func ParseEvent(txt string) *orderbook.Event {
 
 	arr := strings.Split(txt, ", ")
 
-	result := &orderbook.Event{}
+	result := &orderbook.OrderEvent{}
 
 	//pin.D(txt, arr)
 

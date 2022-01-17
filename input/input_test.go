@@ -30,8 +30,8 @@ func TestInput(t *testing.T) {
 type TestListener struct {
 }
 
-func (t TestListener) DoProcess(ev *orderbook.Event) {
-	pin.D("Event received", ev)
+func (t TestListener) DoProcess(ev *orderbook.OrderEvent) {
+	pin.D("OrderEvent received", ev)
 }
 
 func (t TestListener) Reset(scenario string) {

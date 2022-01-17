@@ -19,7 +19,7 @@ type OrderID int64
 type Price int64
 type Quantity int64
 
-type Event struct {
+type OrderEvent struct {
 	OrderType OrderType
 	UserID    UserID
 	Symbol    Symbol
@@ -29,13 +29,13 @@ type Event struct {
 	OrderID   OrderID
 }
 
-func (e *Event) String() string {
+func (e *OrderEvent) String() string {
 	b, _ := json.Marshal(e)
 	return string(b)
 }
 
 type BookEvent struct {
-	//Input *Event
+	//Input *OrderEvent
 
 	EventType EventType
 

@@ -27,12 +27,12 @@ func TestOrderbook(t *testing.T) {
 	reader := input.NewFileReader(testInput)
 	testListener := &TestListener{
 		testData: test}
-	reader.Subscribe(testListener)
-	reader.Run()
+
 
 	var bookEventListener orderbook.BookListener = testListener
 	book := orderbook.NewBook(bookEventListener)
-	testListener.book = book
+	reader.Subscribe(book)
+	reader.Run()
 
 	for reader.IsRunnung() {
 		time.Sleep(2 * time.Second)
@@ -44,13 +44,7 @@ func TestOrderbook(t *testing.T) {
 type TestListener struct {
 	testData *testoutput.TestOutput
 	scenario string
-	book     *orderbook.Book
 	counter  int
-}
-
-func (t *TestListener) DoProcess(ev *orderbook.Event) {
-	t.book.DoUpdate(ev)
-	pin.D("Event received", ev)
 }
 
 func (t *TestListener) OnBookEvent(e *orderbook.BookEvent) {

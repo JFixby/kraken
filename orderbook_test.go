@@ -16,8 +16,6 @@ var setup *testing.T
 func TestOrderbook(t *testing.T) {
 	setup = t
 
-	book := orderbook.NewBook()
-
 	home := fileops.Abs("")
 	testData := filepath.Join(home, "data", "test1")
 	testOutput := filepath.Join(testData, "out", "output_file.csv")
@@ -28,10 +26,13 @@ func TestOrderbook(t *testing.T) {
 
 	reader := input.NewFileReader(testInput)
 	testListener := &TestListener{
-		testData: test,
-		book:     book}
+		testData: test}
 	reader.Subscribe(testListener)
 	reader.Run()
+
+	var bookEventListener orderbook.BookListener = testListener
+	book := orderbook.NewBook(bookEventListener)
+	testListener.book = book
 
 	for reader.IsRunnung() {
 		time.Sleep(2 * time.Second)
@@ -48,25 +49,31 @@ type TestListener struct {
 }
 
 func (t *TestListener) DoProcess(ev *orderbook.Event) {
-
-	result := t.book.DoUpdate(ev)
-	expectedEvent := t.testData.GetEvent(t.scenario, t.counter)
-
-	check(setup, result, expectedEvent, t.scenario, t.counter)
-
+	t.book.DoUpdate(ev)
 	pin.D("Event received", ev)
+}
+
+func (t *TestListener) OnBookEvent(e *orderbook.BookEvent) {
+	expectedEvent := t.testData.GetEvent(t.scenario, t.counter)
+	check(setup, e, expectedEvent, t.scenario, t.counter)
 	t.counter++
 }
 
 func check(
 	setup *testing.T,
-	actual *orderbook.Result,
-	expected *testoutput.TestEvent,
+	actual *orderbook.BookEvent,
+	expected *orderbook.BookEvent,
 	scenario string,
 	counter int) {
 
-	pin.D("expected", expected)
-	pin.D("  actual", actual)
+	if !expected.Equal(actual) {
+
+		pin.D(" counter", counter)
+		pin.D("expected", expected)
+		pin.D("  actual", actual)
+		//setup.FailNow()
+		panic("")
+	}
 }
 
 func (t *TestListener) Reset(scenario string) {

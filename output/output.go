@@ -2,70 +2,20 @@ package testoutput
 
 import (
 	"bufio"
+	"github.com/jfixby/kraken/orderbook"
 	"github.com/jfixby/pin"
 	"os"
 	"strconv"
 	"strings"
 )
 
-import "encoding/json"
-
-type EventType string
-
-const Acknowledge EventType = "Acknowledge"
-const Reject EventType = "Reject"
-const Best EventType = "Best"
-const Trade EventType = "Trade"
-
-type Side string
-
-const BUY Side = "BUY"
-const SELL Side = "SELL"
-
-type UserIDBuy int64
-type UserIDSell int64
-type UserIDReject int64
-type UserIDAcknowledge int64
-
-type OrderIDBuy int64
-type OrderIDSell int64
-type OrderIDAcknowledge int64
-type OrderIDReject int64
-
-type Price int64
-type Quantity int64
-
-func (e *TestEvent) String() string {
-	b, _ := json.Marshal(e)
-	return string(b)
-}
-
-type TestEvent struct {
-	EventType EventType
-
-	UserIDAcknowledge UserIDAcknowledge
-	UserIDSell        UserIDSell
-	UserIDBuy         UserIDBuy
-	UserIDReject      UserIDReject
-
-	Price    Price
-	Quantity Quantity
-	Side     Side
-
-	OrderIDBuy         OrderIDBuy
-	OrderIDSell        OrderIDSell
-	OrderIDAcknowledge OrderIDAcknowledge
-	OrderIDReject      OrderIDReject
-	ShallowAsk         bool
-}
-
 type TestOutput struct {
 	File string
-	data map[string][]*TestEvent
+	data map[string][]*orderbook.BookEvent
 }
 
 func (o *TestOutput) LoadAll() error {
-	o.data = map[string][]*TestEvent{}
+	o.data = map[string][]*orderbook.BookEvent{}
 
 	pin.D("reading", o.File)
 	file, err := os.Open(o.File)
@@ -83,7 +33,7 @@ func (o *TestOutput) LoadAll() error {
 			tag = txt[len("#name: "):]
 			{
 				//pin.D("tag", tag)
-				o.data[tag] = []*TestEvent{}
+				o.data[tag] = []*orderbook.BookEvent{}
 				continue
 			}
 		}
@@ -98,7 +48,7 @@ func (o *TestOutput) LoadAll() error {
 	return nil
 }
 
-func (o *TestOutput) GetEvent(scenario string, counter int) *TestEvent {
+func (o *TestOutput) GetEvent(scenario string, counter int) *orderbook.BookEvent {
 	list := o.data[scenario]
 	if list == nil {
 		pin.E("scenario not found", scenario)
@@ -109,7 +59,7 @@ func (o *TestOutput) GetEvent(scenario string, counter int) *TestEvent {
 	return list[counter]
 }
 
-func TryToParse(txt string) *TestEvent {
+func TryToParse(txt string) *orderbook.BookEvent {
 	if txt == "" {
 		return nil
 	}
@@ -120,34 +70,34 @@ func TryToParse(txt string) *TestEvent {
 
 	arr := strings.Split(txt, ", ")
 
-	result := &TestEvent{}
+	result := &orderbook.BookEvent{}
 
 	if arr[0] == "A" {
-		result.EventType = Acknowledge
+		result.EventType = orderbook.ACKNOWLEDGE
 
 		userID, err := strconv.Atoi(arr[1])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.UserIDAcknowledge = UserIDAcknowledge(userID)
+		result.UserIDAcknowledge = orderbook.UserID(userID)
 
 		orderID, err := strconv.Atoi(arr[2])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.OrderIDAcknowledge = OrderIDAcknowledge(orderID)
+		result.OrderIDAcknowledge = orderbook.OrderID(orderID)
 		return result
 	}
 
 	if arr[0] == "B" {
-		result.EventType = Best
+		result.EventType = orderbook.BEST
 
 		if arr[1] == "S" {
-			result.Side = SELL
+			result.Side = orderbook.SELL
 		} else if arr[1] == "B" {
-			result.Side = BUY
+			result.Side = orderbook.BUY
 		} else {
 			pin.E("Unknown order side", txt)
 			return nil
@@ -161,7 +111,7 @@ func TryToParse(txt string) *TestEvent {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.Price = Price(price)
+		result.Price = orderbook.Price(price)
 
 		if arr[3] == "-" {
 			result.ShallowAsk = true
@@ -171,75 +121,75 @@ func TryToParse(txt string) *TestEvent {
 				pin.E("invalid input", txt)
 				return nil
 			}
-			result.Quantity = Quantity(quantity)
+			result.Quantity = orderbook.Quantity(quantity)
 		}
 
 		return result
 	}
 
 	if arr[0] == "R" {
-		result.EventType = Reject
+		result.EventType = orderbook.REJECT
 
 		userID, err := strconv.Atoi(arr[1])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.UserIDReject = UserIDReject(userID)
+		result.UserIDReject = orderbook.UserID(userID)
 
 		orderID, err := strconv.Atoi(arr[2])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.OrderIDReject = OrderIDReject(orderID)
+		result.OrderIDReject = orderbook.OrderID(orderID)
 		return result
 	}
 
 	if arr[0] == "T" {
-		result.EventType = Trade
+		result.EventType = orderbook.TRADE
 
 		userIDBuy, err := strconv.Atoi(arr[1])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.UserIDBuy = UserIDBuy(userIDBuy)
+		result.UserIDBuy = orderbook.UserID(userIDBuy)
 
 		orderIDBuy, err := strconv.Atoi(arr[2])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.OrderIDBuy = OrderIDBuy(orderIDBuy)
+		result.OrderIDBuy = orderbook.OrderID(orderIDBuy)
 
 		userIDSell, err := strconv.Atoi(arr[3])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.UserIDSell = UserIDSell(userIDSell)
+		result.UserIDSell = orderbook.UserID(userIDSell)
 
 		orderIDSell, err := strconv.Atoi(arr[4])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.OrderIDSell = OrderIDSell(orderIDSell)
+		result.OrderIDSell = orderbook.OrderID(orderIDSell)
 
 		price, err := strconv.Atoi(arr[5])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.Price = Price(price)
+		result.Price = orderbook.Price(price)
 
 		quantity, err := strconv.Atoi(arr[6])
 		if err != nil {
 			pin.E("invalid input", txt)
 			return nil
 		}
-		result.Quantity = Quantity(quantity)
+		result.Quantity = orderbook.Quantity(quantity)
 		return result
 	}
 

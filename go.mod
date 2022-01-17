@@ -2,4 +2,7 @@ module github.com/jfixby/kraken
 
 go 1.16
 
-require github.com/jfixby/pin v0.0.0-20210620214453-9aa2fb4d9006 // indirect
+require (
+	github.com/MauriceGit/skiplist v0.0.0-20211105230623-77f5c8d3e145 // indirect
+	github.com/jfixby/pin v0.0.0-20210620214453-9aa2fb4d9006 // indirect
+)

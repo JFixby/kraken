@@ -1,5 +1,7 @@
 package orderbook
 
+import "github.com/jfixby/kraken/util"
+
 type BookListener interface {
 	OnBookEvent(*BookEvent)
 }
@@ -12,7 +14,9 @@ type Book struct {
 
 type Market struct {
 	Symbol Symbol
-	orders map[Price][]Order
+	//orders map[Price][]Order
+	//skipList := util.NewIntMap()
+	orders *util.SkipList // price :-> order list, log N search
 }
 
 type Order struct {
@@ -33,7 +37,14 @@ func (b *Book) DoUpdate(ev *Event) {
 
 func (b *Book) NewOrder(ev *Event) {
 	market := b.getMarket(ev.Symbol)
-	orders := market.orders[ev.Price]
+	v, ok := market.orders.Get(int(ev.Price))
+
+	var orders []Order
+	if !ok {
+		orders = []Order{}
+	} else {
+		orders = v.([]Order)
+	}
 
 	order := Order{}
 	order.OrderID = b.NewOrderID()
@@ -44,7 +55,8 @@ func (b *Book) NewOrder(ev *Event) {
 
 	if len(orders) == 0 {
 		orders = append(orders, order)
-		market.orders[ev.Price] = orders
+		//market.orders[ev.Price] = orders
+		market.orders.Set(int(ev.Price), orders)
 		bev := &BookEvent{}
 		bev.EventType = ACKNOWLEDGE
 		bev.UserIDAcknowledge = ev.UserID
@@ -52,6 +64,10 @@ func (b *Book) NewOrder(ev *Event) {
 		//bev.Input = ev
 		b.BookListener.OnBookEvent(bev)
 		return
+	}
+
+	if len(orders) == 0 {
+		
 	}
 
 }
@@ -63,7 +79,7 @@ func (b *Book) getMarket(symbol Symbol) *Market {
 	market := b.markets[symbol]
 	if market == nil {
 		market = &Market{Symbol: symbol}
-		market.orders = map[Price][]Order{}
+		market.orders = util.NewIntMap()
 		b.markets[symbol] = market
 	}
 	return market
@@ -81,5 +97,5 @@ func (b *Book) Reset() *Book {
 }
 
 func NewBook(l BookListener) *Book {
-	return Book{BookListener: l}.Reset()
+	return (&Book{BookListener: l}).Reset()
 }

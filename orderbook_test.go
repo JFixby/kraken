@@ -4,6 +4,7 @@ import (
 	"github.com/jfixby/kraken/input"
 	"github.com/jfixby/kraken/orderbook"
 	testoutput "github.com/jfixby/kraken/output"
+	"github.com/jfixby/kraken/util"
 	"github.com/jfixby/pin"
 	"github.com/jfixby/pin/fileops"
 	"path/filepath"
@@ -15,6 +16,9 @@ var setup *testing.T
 
 func TestOrderbook(t *testing.T) {
 	setup = t
+
+	skipList := util.NewIntMap()
+	skipList.Set(1, "one")
 
 	home := fileops.Abs("")
 	testData := filepath.Join(home, "data", "test1")

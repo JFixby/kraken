@@ -8,6 +8,7 @@ import (
 	"github.com/jfixby/pin"
 	"github.com/jfixby/pin/fileops"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -53,12 +54,15 @@ type TestListener struct {
 }
 
 func (t *TestListener) DoProcess(ev *orderbook.Event) {
+	//pin.D("Event received", ev)
 	t.book.DoUpdate(ev)
-	pin.D("Event received", ev)
+
 }
 
 func (t *TestListener) OnBookEvent(e *orderbook.BookEvent) {
 	expectedEvent := t.testData.GetEvent(t.scenario, t.counter)
+	//pin.D("Event produced", e)
+
 	check(setup, e, expectedEvent, t.scenario, t.counter)
 	t.counter++
 }
@@ -81,8 +85,15 @@ func check(
 }
 
 func (t *TestListener) Reset(scenario string) {
-	pin.D("Next scenario", scenario)
+	//pin.D("Next scenario", scenario)
 	t.scenario = scenario
 	t.counter = 0
 	t.book.Reset()
+
+	if strings.Contains(scenario, "13") {
+		t.book.TradingModeON = true
+	}
+	if strings.Contains(scenario, "14") {
+		t.book.TradingModeON = true
+	}
 }

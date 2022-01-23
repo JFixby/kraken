@@ -53,6 +53,7 @@ type BookEvent struct {
 	OrderIDAcknowledge OrderID
 	OrderIDReject      OrderID
 	ShallowAsk         bool
+
 }
 
 func (e *BookEvent) String() string {

@@ -104,14 +104,15 @@ func TryToParse(txt string) *orderbook.BookEvent {
 		}
 
 		if arr[2] == "-" {
-			arr[2] = "-1"
+			result.ShallowAsk = true
+		} else {
+			price, err := strconv.Atoi(arr[2])
+			if err != nil {
+				pin.E("invalid input", txt)
+				return nil
+			}
+			result.Price = orderbook.Price(price)
 		}
-		price, err := strconv.Atoi(arr[2])
-		if err != nil {
-			pin.E("invalid input", txt)
-			return nil
-		}
-		result.Price = orderbook.Price(price)
 
 		if arr[3] == "-" {
 			result.ShallowAsk = true

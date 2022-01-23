@@ -56,6 +56,10 @@ func (o *TestOutput) GetEvent(scenario string, counter int) *orderbook.BookEvent
 		pin.E("                  ", o.data)
 		panic("")
 	}
+	if counter>= len(list) {
+		pin.E("output not found  ", o.data)
+		return nil
+	}
 	return list[counter]
 }
 

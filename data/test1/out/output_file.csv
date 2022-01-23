@@ -213,8 +213,38 @@ A, 2, 101
 A, 2, 102
 B, S, 11, 100
 A, 1, 2
-
 T, 1, 2, 2, 102, 11, 100
 B, S, -, -
 A, 2, 103
 B, S, 11, 100
+
+#name: scenario T1
+
+A, 1, 101
+B, B, 1, 1
+A, 1, 102
+B, B, 2, 2
+A, 1, 103
+B, B, 3, 3
+A, 1, 104
+B, B, 4, 4
+A, 2, 105
+T, 1, 104, 2, 105, 4, 4
+T, 1, 103, 2, 105, 3, 3
+T, 1, 102, 2, 105, 2, 1
+
+# T, userIdBuy, userOrderIdBuy, userIdSell, userOrderIdSell, price, quantity
+
+#name: scenario T2
+
+A, 1, 101
+B, S, 1, 1
+A, 1, 102
+A, 1, 103
+A, 1, 104
+A, 2, 105
+T, 2, 105, 1, 101, 1, 1
+T, 2, 105, 1, 102, 2, 2
+B, B, 2, 5
+
+# B, side (B or S), price, totalQuantity

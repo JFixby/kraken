@@ -181,8 +181,15 @@ func (b *Book) execute(order Order) {
 		}
 
 		price := unKey(level.Key())
-		if price > order.Price {
-			break
+		if order.Side == BUY {
+			if price > order.Price {
+				break
+			}
+		}
+		if order.Side == SELL {
+			if price < order.Price {
+				break
+			}
 		}
 		orders := level.Value().(*OrderList)
 

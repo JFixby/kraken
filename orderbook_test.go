@@ -23,6 +23,10 @@ func TestOrderbook(t *testing.T) {
 
 	home := fileops.Abs("")
 	testData := filepath.Join(home, "data", "test1")
+
+	//testOutput := filepath.Join(testData, "out", "output_file.csv")
+	//testInput := filepath.Join(testData, "in", "input_file.csv")
+
 	testOutput := filepath.Join(testData, "out", "output_file.csv")
 	testInput := filepath.Join(testData, "in", "input_file.csv")
 
@@ -54,14 +58,15 @@ type TestListener struct {
 }
 
 func (t *TestListener) DoProcess(ev *orderbook.Event) {
-	//pin.D("Event received", ev)
+	pin.D("Event received", ev)
 	t.book.DoUpdate(ev)
 
 }
 
 func (t *TestListener) OnBookEvent(e *orderbook.BookEvent) {
+	pin.D("Event produced", e)
 	expectedEvent := t.testData.GetEvent(t.scenario, t.counter)
-	//pin.D("Event produced", e)
+
 
 	check(setup, e, expectedEvent, t.scenario, t.counter)
 	t.counter++
@@ -94,6 +99,9 @@ func (t *TestListener) Reset(scenario string) {
 		t.book.TradingModeON = true
 	}
 	if strings.Contains(scenario, "14") {
+		t.book.TradingModeON = true
+	}
+	if strings.Contains(scenario, "T") {
 		t.book.TradingModeON = true
 	}
 }

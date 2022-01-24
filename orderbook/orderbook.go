@@ -1,6 +1,9 @@
 package orderbook
 
-import "github.com/jfixby/kraken/util"
+import (
+	"github.com/jfixby/kraken/util"
+	"github.com/jfixby/pin"
+)
 
 type BookListener interface {
 	OnBookEvent(*BookEvent)
@@ -10,12 +13,74 @@ type Book struct {
 	BookListener  BookListener
 	markets       map[Symbol]*Market
 	TradingModeON bool
+	ordersById    map[OrderID]*OrderList
 }
 
 type Market struct {
 	Symbol     Symbol
 	buyOrders  *util.SkipList // price :-> order list, log N search
 	sellOrders *util.SkipList // price :-> order list, log N search
+}
+
+func (b *Book) removeOrder(orderId OrderID) {
+	//pin.D("remove", orderId)
+
+	order, olist := b.findOrder(orderId)
+	orderStack := olist.owner
+
+	bestOrderID := findBestOrderID(orderStack, order.Side)
+	_, bestOrderList := b.findOrder(bestOrderID)
+
+	wasBestOrder := bestOrderList == olist
+
+	olist.list.Delete(int(orderId))
+	olist.totalQuantity = olist.totalQuantity - order.Quantity
+	delete(b.ordersById, orderId)
+
+	if olist.list.Len() == 0 {
+		orderStack.Delete(key(order.Price))
+		if orderStack.Len() == 0 {
+			b.bestShallow(order.Side)
+		} else {
+			if wasBestOrder {
+				newBestOrderID := findBestOrderID(orderStack, order.Side)
+				o, l := b.findOrder(newBestOrderID)
+				b.best(o, l.totalQuantity)
+			}
+		}
+	} else {
+		if wasBestOrder {
+			newBestOrderID := findBestOrderID(orderStack, order.Side)
+			o, l := b.findOrder(newBestOrderID)
+			b.best(o, l.totalQuantity)
+		}
+	}
+
+}
+
+func (b *Book) findOrder(orderId OrderID) (order *Order, orderList *OrderList) {
+	orderList = b.ordersById[orderId]
+	if orderList == nil {
+		pin.E("Missing order", orderId)
+		pin.E("             ", b.ordersById)
+		panic("")
+	}
+	v, _ := orderList.list.Get(int(orderId))
+	order = v.(*Order)
+	return
+}
+
+func findBestOrderID(orderStack *util.SkipList, side Side) OrderID {
+	var best util.Iterator = nil
+	if side == BUY {
+		best = orderStack.SeekToLast()
+	}
+	if side == SELL {
+		best = orderStack.SeekToFirst()
+	}
+	olist := best.Value().(*OrderList)
+
+	return OrderID(olist.list.SeekToFirst().Key().(int))
 }
 
 type Order struct {
@@ -28,19 +93,28 @@ type Order struct {
 }
 
 type OrderList struct {
-	list          []Order
+	list          *util.SkipList // order id :-> order
 	totalQuantity Quantity
+	owner         *util.SkipList //
 }
 
 func (b *Book) DoUpdate(ev *Event) {
 	if ev.OrderType == NEW {
 		b.NewOrder(ev)
 	}
+	if ev.OrderType == CANCEL {
+		b.CancelOrder(ev)
+	}
+	if ev.OrderType == FLUSH {
+		b.Reset()
+		b.over()
+	}
+
 }
 
 func (b *Book) NewOrder(ev *Event) {
 
-	order := Order{}
+	order := &Order{}
 	order.OrderID = ev.OrderID
 	order.Price = ev.Price
 	order.Symbol = ev.Symbol
@@ -50,13 +124,13 @@ func (b *Book) NewOrder(ev *Event) {
 
 	if b.orderIsTradeable(order) {
 		if b.TradingModeON {
-			b.acknow(order)
+			b.acknow(order.UserID, order.OrderID)
 			b.execute(order)
 		} else {
 			b.reject(order)
 		}
 	} else {
-		b.acknow(order)
+		b.acknow(order.UserID, order.OrderID)
 		b.append(order)
 	}
 
@@ -65,6 +139,7 @@ func (b *Book) NewOrder(ev *Event) {
 func (b *Book) getMarket(symbol Symbol) *Market {
 	if b.markets == nil {
 		b.markets = map[Symbol]*Market{}
+		b.ordersById = map[OrderID]*OrderList{}
 	}
 	market := b.markets[symbol]
 	if market == nil {
@@ -78,19 +153,26 @@ func (b *Book) getMarket(symbol Symbol) *Market {
 
 func (b *Book) Reset() *Book {
 	b.markets = nil
+	b.ordersById = nil
 	b.TradingModeON = false
 	return b
 }
 
-func (b *Book) acknow(order Order) {
+func (b *Book) over() {
 	bev := &BookEvent{}
-	bev.EventType = ACKNOWLEDGE
-	bev.UserIDAcknowledge = order.UserID
-	bev.OrderIDAcknowledge = order.OrderID
+	bev.EventType = OVER
 	b.BookListener.OnBookEvent(bev)
 }
 
-func (b *Book) reject(order Order) {
+func (b *Book) acknow(userID UserID, orderId OrderID) {
+	bev := &BookEvent{}
+	bev.EventType = ACKNOWLEDGE
+	bev.UserIDAcknowledge = userID
+	bev.OrderIDAcknowledge = orderId
+	b.BookListener.OnBookEvent(bev)
+}
+
+func (b *Book) reject(order *Order) {
 	bev := &BookEvent{}
 	bev.EventType = REJECT
 	bev.UserIDReject = order.UserID
@@ -98,7 +180,7 @@ func (b *Book) reject(order Order) {
 	b.BookListener.OnBookEvent(bev)
 }
 
-func (b *Book) best(order Order, totalQuantity Quantity) {
+func (b *Book) best(order *Order, totalQuantity Quantity) {
 	bev := &BookEvent{}
 	bev.EventType = BEST
 	bev.Side = order.Side
@@ -115,7 +197,7 @@ func (b *Book) bestShallow(side Side) {
 	b.BookListener.OnBookEvent(bev)
 }
 
-func (b *Book) append(order Order) {
+func (b *Book) append(order *Order) {
 	market := b.getMarket(order.Symbol)
 
 	var orderStack *util.SkipList = nil
@@ -131,9 +213,17 @@ func (b *Book) append(order Order) {
 	if !ok {
 		list = &OrderList{}
 		orderStack.Set(key(order.Price), list)
+
+		olist := list.(*OrderList)
+		olist.owner = orderStack
+		olist.list = util.NewIntMap()
+
 	}
+
 	olist := list.(*OrderList)
-	olist.list = append(olist.list, order)
+	olist.list.Set(int(order.OrderID), order)
+	b.ordersById[order.OrderID] = olist
+
 	olist.totalQuantity = olist.totalQuantity + order.Quantity
 
 	var price Price = 0
@@ -153,7 +243,12 @@ func (b *Book) append(order Order) {
 	return
 }
 
-func (b *Book) execute(order Order) {
+func (b *Book) CancelOrder(order *Event) {
+	b.acknow(order.UserID, order.OrderID)
+	b.removeOrder(order.OrderID)
+}
+
+func (b *Book) execute(order *Order) {
 	market := b.getMarket(order.Symbol)
 
 	remainingQuantity := order.Quantity
@@ -196,29 +291,25 @@ func (b *Book) execute(order Order) {
 		var buy *Order = nil
 		var sell *Order = nil
 
-		for len(orders.list) > 0 {
-			nextOrder := orders.list[0]
+		for orders.list.Len() > 0 {
+			nextOrder := (orders.list.SeekToFirst().Value()).(*Order)
 
 			if order.Side == BUY {
-				buy = &order
-				sell = &nextOrder
+				buy = order
+				sell = nextOrder
 			}
 			if order.Side == SELL {
-				buy = &nextOrder
-				sell = &order
+				buy = nextOrder
+				sell = order
 			}
 
 			if nextOrder.Quantity <= remainingQuantity {
 				quantityToExecute := nextOrder.Quantity
 
 				b.executeOrder(buy, sell, price, quantityToExecute)
-				orders.list = orders.list[1:]
-
-				if len(orders.list) == 0 {
-					orderStack.Delete(level.Key())
-				}
-
 				remainingQuantity = remainingQuantity - quantityToExecute
+				b.removeOrder(nextOrder.OrderID)
+
 			} else {
 				quantityToExecute := remainingQuantity
 
@@ -230,10 +321,6 @@ func (b *Book) execute(order Order) {
 			}
 
 		}
-	}
-
-	if orderStack.Len() == 0 {
-		b.bestShallow(Invert(order.Side))
 	}
 
 	if remainingQuantity > 0 {
@@ -278,7 +365,7 @@ func unKey(i interface{}) Price {
 	return Price(i.(int))
 }
 
-func (b *Book) orderIsTradeable(order Order) bool {
+func (b *Book) orderIsTradeable(order *Order) bool {
 
 	if order.Side == BUY {
 		lowestAsk := b.lowestAsk(order.Symbol)

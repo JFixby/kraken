@@ -207,17 +207,42 @@ F
 
 #name: scenario T1
 
-N, 1, VAL, 1, 1, B, 101
-N, 1, VAL, 2, 2, B, 102
-N, 1, VAL, 3, 3, B, 103
-N, 1, VAL, 4, 4, B, 104
-N, 2, VAL, 2, 8, S, 105
+N, 1, VAL, 11, 1, B, 101
+N, 1, VAL, 12, 2, B, 102
+N, 1, VAL, 13, 3, B, 103
+N, 1, VAL, 14, 4, B, 104
+N, 2, VAL, 12, 8, S, 105
 F
 
 #name: scenario T2
+# N, user(int),symbol(string),price(int),qty(int),side(char B or S),userOrderId(int)
 
-N, 1, VAL, 1, 1, S, 101
-N, 1, VAL, 2, 2, S, 102
-N, 1, VAL, 3, 3, S, 103
-N, 1, VAL, 4, 4, S, 104
-N, 2, VAL, 2, 8, B, 105
+N, 1, VAL, 11, 1, S, 101
+N, 1, VAL, 12, 2, S, 102
+N, 1, VAL, 13, 3, S, 103
+N, 1, VAL, 14, 4, S, 104
+N, 2, VAL, 12, 8, B, 105
+F
+
+#name: scenario T3
+N, 1, VAL, 11, 1, S, 101
+N, 1, VAL, 12, 2, S, 102
+N, 2, VAL, 10, 1, B, 103
+N, 2, VAL, 9, 2, B, 104
+
+N, 2, VAL, 11, 1, B, 105
+N, 2, VAL, 12, 2, B, 106
+N, 1, VAL, 10, 1, S, 107
+N, 1, VAL, 9, 2, S, 108
+F
+
+#name: scenario T4
+N, 2, VAL, 11, 2, B, 105
+N, 2, VAL, 12, 1, B, 106
+N, 1, VAL, 10, 2, S, 107
+N, 1, VAL, 9, 1, S, 108
+
+N, 3, VAL, 1, 1, B, 305
+
+
+F

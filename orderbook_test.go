@@ -67,7 +67,6 @@ func (t *TestListener) OnBookEvent(e *orderbook.BookEvent) {
 	pin.D("Event produced", e)
 	expectedEvent := t.testData.GetEvent(t.scenario, t.counter)
 
-
 	check(setup, e, expectedEvent, t.scenario, t.counter)
 	t.counter++
 }
@@ -90,7 +89,7 @@ func check(
 }
 
 func (t *TestListener) Reset(scenario string) {
-	//pin.D("Next scenario", scenario)
+	pin.D("Next scenario", scenario)
 	t.scenario = scenario
 	t.counter = 0
 	t.book.Reset()

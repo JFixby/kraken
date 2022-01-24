@@ -15,7 +15,7 @@ Warning: Make sure scenario names in output file match the names in the input fi
 For example ```scenario 1``` in input corresponds to ```scenario 1``` and not to
 ```scenario  1``` (two spaces)
 
-See ```output_test.g``` for usage example.
+See ```output_test.go``` for usage example.
 
 ### util
 Contains ```SkipList``` for log N data access
@@ -28,7 +28,7 @@ Simple ```git``` is enough.
 Contains the main class ```Book```. Book listens to input order events and spawns
 output events sent to ```BookListener```
 
-Usage example and the main test is in the ```orderbook_test.test```
+Usage example and the main test is in the ```orderbook_test.go```
 The test 
 1) reads expected output values.
 2) reads input values and redirects it to order book

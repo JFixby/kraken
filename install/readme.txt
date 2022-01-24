@@ -1,6 +1,7 @@
 
 1. Make sure git and Go-lang are installed.
 
-2. Run install.sh to download latest code
+2. Do the following command to deploy code:
+```git clone https://github.com/krcod/kraken kraken```
 
-3. Run run.sh to build and to execute
+3. ```cd kraken``` and run the ```run.sh``` to build and to execute

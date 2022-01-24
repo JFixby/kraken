@@ -1,11 +1,8 @@
-cd kraken
+#!/bin/sh
 
 git pull
-
-set GO111MODULE=on
-
+GO111MODULE=on
 go build ./...
-
 go test ./...
-
 go test -v orderbook_test.go
+

@@ -58,13 +58,13 @@ type TestListener struct {
 }
 
 func (t *TestListener) DoProcess(ev *orderbook.Event) {
-	pin.D("Event received", ev)
+	pin.D("Input ", ev)
 	t.book.DoUpdate(ev)
 
 }
 
 func (t *TestListener) OnBookEvent(e *orderbook.BookEvent) {
-	pin.D("Event produced", e)
+	pin.D("Output", e)
 	expectedEvent := t.testData.GetEvent(t.scenario, t.counter)
 
 	check(setup, e, expectedEvent, t.scenario, t.counter)

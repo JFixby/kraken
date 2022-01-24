@@ -4,4 +4,4 @@
 2. Do the following command to deploy code:
 ```git clone https://github.com/krcod/kraken kraken```
 
-3. ```cd kraken``` and run the ```run.sh``` to build and to execute
+3. ```cd kraken``` and the ```run.sh``` to build and to execute

@@ -18,7 +18,7 @@ func TestInput(t *testing.T) {
 	home := fileops.Abs("")
 	testData := filepath.Join(home, "data", "test1")
 	testInput := filepath.Join(testData, "in", "input_file.csv")
-	//testOutput := filepath.Join(testData, "out", "output_file.csv")
+	//testOutput := filepath.Join(expectedOutput, "out", "output_file.csv")
 
 	reader := input.NewFileReader(testInput)
 	testListener := &InputTestListener{}

@@ -1,8 +1,9 @@
 # kraken 
 Release 0.0.0
 
-Packages:
+This is not an application. This is a plugable go-lang component (library).
 
+Packages:
 ### input 
 Reads input data and transforms it into data stream
 sending events to the ```DataListener```.
@@ -26,13 +27,15 @@ Contains setup, deployment and installation scripts. No need to use docker.
 Simple ```git``` is enough.
 
 ### orderbook
-Contains the main class ```Book```. Book listens to input order events and spawns
+Contains the main class ```Book```.
+```Book``` is a plugable go-lang component (library).
+Book listens to input order events and spawns
 output events sent to ```BookListener```
 
-Usage example and the main test is in the ```orderbook_test.go```
+Usage example and the main test is located in the ```orderbook_test.go```
 The test 
 1) reads expected output values.
 2) reads input values and redirects it to order book
 3) outputs spawned by order book are checked against test output
 
-input -> test setup -> order book -> test setup, checked against expected output
+input -> test setup -> ```Book``` -> test setup, checked against expected output

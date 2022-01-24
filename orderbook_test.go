@@ -4,7 +4,6 @@ import (
 	"github.com/jfixby/kraken/input"
 	"github.com/jfixby/kraken/orderbook"
 	testoutput "github.com/jfixby/kraken/output"
-	"github.com/jfixby/kraken/util"
 	"github.com/jfixby/pin"
 	"github.com/jfixby/pin/fileops"
 	"path/filepath"
@@ -15,62 +14,66 @@ import (
 
 var setup *testing.T
 
-func TestOrderbook(t *testing.T) {
+// Both component test and usage example
+func TestOrderBook(t *testing.T) {
 	setup = t
 
-	skipList := util.NewIntMap()
-	skipList.Set(1, "one")
-
+	// input data
 	home := fileops.Abs("")
 	testData := filepath.Join(home, "data", "test1")
-
-	//testOutput := filepath.Join(testData, "out", "output_file.csv")
-	//testInput := filepath.Join(testData, "in", "input_file.csv")
-
 	testOutput := filepath.Join(testData, "out", "output_file.csv")
 	testInput := filepath.Join(testData, "in", "input_file.csv")
 
-	test := &testoutput.TestOutput{File: testOutput}
-	test.LoadAll()
+	// expected output
+	expectedOutput := &testoutput.TestOutput{File: testOutput}
+	expectedOutput.LoadAll()
 
-	reader := input.NewFileReader(testInput)
-	testListener := &TestListener{
-		testData: test}
-	reader.Subscribe(testListener)
-	reader.Run()
+	// TestEnvironment wraps and tests Book component
+	testEnvironment := &TestEnvironment{
+		expectedOutput: expectedOutput}
+	var bookEventListener orderbook.BookListener = testEnvironment
 
-	var bookEventListener orderbook.BookListener = testListener
+	//create book and subscribe it to TestEnvironment
 	book := orderbook.NewBook(bookEventListener)
-	testListener.book = book
+	testEnvironment.book = book
 
-	for reader.IsRunnung() {
+	// expected input will be read as a file and converted into event stream
+	// fed to test environment
+	inputFileReader := input.NewFileReader(testInput)
+	inputFileReader.Subscribe(testEnvironment)
+	inputFileReader.Run()
+
+	// wait for tests to finish
+	for inputFileReader.IsRunnung() {
 		time.Sleep(2 * time.Second)
 	}
 
 	pin.D("EXIT")
 }
 
-type TestListener struct {
-	testData *testoutput.TestOutput
-	scenario string
-	book     *orderbook.Book
-	counter  int
+type TestEnvironment struct {
+	expectedOutput *testoutput.TestOutput
+	scenario       string
+	book           *orderbook.Book
+	counter        int
 }
 
-func (t *TestListener) DoProcess(ev *orderbook.Event) {
+// Receives input events and feeds them to the Book
+func (t *TestEnvironment) DoProcess(ev *orderbook.Event) {
 	pin.D("Input ", ev)
 	t.book.DoUpdate(ev)
-
 }
 
-func (t *TestListener) OnBookEvent(e *orderbook.BookEvent) {
+// Listents for events spawned by the Book and checks them against expected
+func (t *TestEnvironment) OnBookEvent(e *orderbook.BookEvent) {
 	pin.D("Output", e)
-	expectedEvent := t.testData.GetEvent(t.scenario, t.counter)
+	expectedEvent := t.expectedOutput.GetEvent(t.scenario, t.counter)
 
 	check(setup, e, expectedEvent, t.scenario, t.counter)
 	t.counter++
 }
 
+// compares expected output with actual
 func check(
 	setup *testing.T,
 	actual *orderbook.BookEvent,
@@ -88,7 +91,8 @@ func check(
 	}
 }
 
-func (t *TestListener) Reset(scenario string) {
+// Resets book on each scenario
+func (t *TestEnvironment) Reset(scenario string) {
 	pin.D("Next scenario", scenario)
 	t.scenario = scenario
 	t.counter = 0

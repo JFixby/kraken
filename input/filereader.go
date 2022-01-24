@@ -50,8 +50,9 @@ func (r *FileReader) runthread() {
 	file, err := os.Open(input)
 	defer file.Close()
 	if err != nil {
+		pin.E("failed to read file", err)
 		r.runFlag = false
-		return
+		panic(err)
 	}
 
 	scanner := bufio.NewScanner(file)

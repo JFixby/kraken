@@ -12,11 +12,4 @@ then
     exit
 fi
 
-if [ ! -d kraken ] then
-   git clone https://github.com/krcod/kraken kraken
-if
-
-cd kraken
-git reset HEAD --hard
-
-dir
+git clone https://github.com/krcod/kraken kraken

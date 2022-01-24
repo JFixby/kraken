@@ -66,6 +66,13 @@ func (o *TestOutput) GetEvent(scenario string, counter int) *orderbook.BookEvent
 	return list[counter]
 }
 
+func (o *TestOutput) Print() {
+	for k, v := range o.data {
+		pin.D("test data", k)
+		pin.D("", v)
+	}
+}
+
 func TryToParse(txt string) *orderbook.BookEvent {
 	if txt == "" {
 		return nil

@@ -39,15 +39,11 @@ func (b *Book) removeOrder(orderId OrderID) {
 
 	if olist.list.Len() == 0 {
 		orderStack.Delete(key(order.Price))
-		if orderStack.Len() == 0 {
-			b.bestShallow(order.Side)
-		} else {
-			if wasBestOrder {
-				newBestOrderID := findBestOrderID(orderStack, order.Side)
-				o, l := b.findOrder(newBestOrderID)
-				b.best(o, l.totalQuantity)
-			}
-		}
+
+	}
+
+	if orderStack.Len() == 0 {
+		b.bestShallow(order.Side)
 	} else {
 		if wasBestOrder {
 			newBestOrderID := findBestOrderID(orderStack, order.Side)
@@ -314,9 +310,11 @@ func (b *Book) execute(order *Order) {
 				quantityToExecute := remainingQuantity
 
 				b.executeOrder(buy, sell, price, quantityToExecute)
-
 				nextOrder.Quantity = nextOrder.Quantity - quantityToExecute
 				remainingQuantity = remainingQuantity - quantityToExecute //should be 0
+				orders.totalQuantity = orders.totalQuantity - quantityToExecute
+				b.best(nextOrder, orders.totalQuantity)
+
 				break
 			}
 

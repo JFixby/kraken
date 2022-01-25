@@ -3,6 +3,9 @@ Release 0.0.1
 
 This is not an application. This is a plugable go-lang component (library).
 
+### problem description
+https://www.youtube.com/watch?v=M9Py2IRcAnE
+
 Packages:
 ### input 
 Reads input data and transforms it into data stream
